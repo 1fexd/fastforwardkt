@@ -6,7 +6,7 @@ import fe.gson.extensions.array
 import fe.gson.extensions.keys
 import java.net.URI
 
-enum class FastForwardRules(jsonKey: String) {
+enum class FastForwardRules(val jsonKey: String) {
     PathBase64("path_base64") {
         override fun resolve(url: String): String? {
             return url.substringNullable(url.indexOf("aHR0c"))?.decodeBase64()
@@ -290,7 +290,7 @@ enum class FastForwardRules(jsonKey: String) {
 //    LinkvertiseSafeIn("linkvertise_safe_in");
 
     companion object {
-        fun findByJsonKeyName(jsonKey: String) = FastForwardRules.values().find { it.name == jsonKey }
+        fun findByJsonKeyName(jsonKey: String) = FastForwardRules.values().find { it.jsonKey == jsonKey }
     }
 
     abstract fun resolve(url: String): String?
