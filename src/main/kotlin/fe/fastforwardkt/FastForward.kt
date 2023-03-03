@@ -297,7 +297,11 @@ enum class FastForwardRules(jsonKey: String) {
 }
 
 fun getRuleRedirect(url: String, ruleObject: JsonObject, debugPrint: Boolean = false): String? {
-    ruleObject.keys().map { (key, value) -> key to value.asJsonArray }.forEach { (key, array) ->
+    ruleObject.keySet().mapNotNull { key ->
+        if (ruleObject.get(key).isJsonArray) {
+            key to ruleObject.array(key)
+        } else null
+    }.forEach { (key, array) ->
         val rule = FastForwardRules.findByJsonKeyName(key)
         if (debugPrint) {
             println("No rule found for $key")
