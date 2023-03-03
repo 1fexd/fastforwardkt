@@ -304,7 +304,7 @@ fun getRuleRedirect(url: String, ruleObject: JsonObject, debugPrint: Boolean = f
         }
 
         if (rule != null) {
-            array.map { Regex(it.asJsonPrimitive.asString) }.forEach { regex ->
+            array.map { wildcardToRegex(it.asJsonPrimitive.asString) }.forEach { regex ->
                 if (regex.matches(url)) {
                     if (debugPrint) {
                         println("Regex $regex matches $url")
@@ -318,8 +318,23 @@ fun getRuleRedirect(url: String, ruleObject: JsonObject, debugPrint: Boolean = f
     return null
 }
 
+const val wildcardStart = "*://*."
+const val wildcardStartRegex = ".*:\\/\\/.*"
+
+fun wildcardToRegex(wildcard: String): Regex {
+    return buildString {
+        val replaceOn = if (wildcard.startsWith(wildcardStart)) {
+            append(wildcard.substring(0, wildcardStart.length).replace(wildcardStart, wildcardStartRegex))
+            wildcard.substring(wildcardStart.length)
+        } else wildcard
+
+        append(replaceOn.replace(".", "\\.").replace("/", "\\/").replace("*", ".*"))
+    }.toRegex()
+}
+
 fun isTracker(url: String, ruleObject: JsonObject): Boolean {
-    return ruleObject.array("tracker").map { Regex(it.asJsonPrimitive.asString) }.find {
-        it.matches(url)
-    } != null
+    return ruleObject.array("tracker").map { wildcardToRegex(it.asJsonPrimitive.asString) }
+        .find {
+            it.matches(url)
+        } != null
 }
