@@ -1,3 +1,3 @@
-# clearurlkt
+# fastforwardkt
 
-(Unfinished) Kotlin implementation of [ClearURLs](https://github.com/ClearURLs/)
+(Unfinished) Kotlin implementation of [FastForward](https://github.com/FastForwardTeam/FastForward)'s rule bypasses
