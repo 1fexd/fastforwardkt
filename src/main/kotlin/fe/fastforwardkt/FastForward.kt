@@ -3,8 +3,6 @@ package fe.fastforwardkt
 import com.google.gson.JsonObject
 import fe.fastforwardkt.ext.substringNullable
 import fe.gson.extensions.array
-import fe.gson.extensions.keys
-import java.net.URI
 
 enum class FastForwardRules(val jsonKey: String) {
     PathBase64("path_base64") {
@@ -40,47 +38,47 @@ enum class FastForwardRules(val jsonKey: String) {
     },
     QueryRaw("query_raw") {
         override fun resolve(url: String): String? {
-            val uri = URI(url)
+            val uri = UriKt(url)
             // no fe.fastforwardkt.ext.substringNullable needed as in java, query does not start with ?
             return uri.query + uri.fragment
         }
     },
     QueryBase64("query_base64") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.decodeBase64()
+            return UriKt(url).query?.decodeBase64()
         }
     },
     HashBase64("hash_base64") {
         override fun resolve(url: String): String? {
-            return URI(url).fragment?.decodeBase64()
+            return UriKt(url).fragment?.decodeBase64()
         }
     },
     ParamUrlGeneral("param_url_general") {
         override fun resolve(url: String): String? {
             val inputUrl = url
-            var url = url.substringNullable(url.indexOf("&url=") + 5)
-            if (url?.substringNullable(0, 5) == "aHR0c" || url?.substringNullable(0, 7) == "bWFnbmV") {
-                url = url.split("&")[0].decodeBase64()
-            } else if (url?.substringNullable(0, 13) == "http%3A%2F%2F" || url?.substringNullable(
+            var uri = url.substringNullable(url.indexOf("&url=") + 5)
+            if (uri?.substringNullable(0, 5) == "aHR0c" || uri?.substringNullable(0, 7) == "bWFnbmV") {
+                uri = uri.split("&")[0].decodeBase64()
+            } else if (uri?.substringNullable(0, 13) == "http%3A%2F%2F" || uri?.substringNullable(
                     0,
                     14
                 ) == "https%3A%2F%2F"
             ) {
-                url = url.split("&")[0].decodeUrl()
+                uri = uri.split("&")[0].decodeUrl()
             } else {
-                if (url?.substringNullable(0, 7) != "http://" && url?.substringNullable(0, 8) != "https://") {
-                    url = "http://" + url
+                if (uri?.substringNullable(0, 7) != "http://" && uri?.substringNullable(0, 8) != "https://") {
+                    uri = "http://" + uri
                 }
-                url += URI(url).fragment
+                uri += UriKt(uri).fragment
             }
 
             // TODO: return referrer
-            return url
+            return uri
         }
     },
     ParamUrlEncoded("param_url_encoded") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.querySplit()?.get("url")
+            return UriKt(url).splitQuery["url"]
         }
     },
     ParamUrlRaw("param_url_raw") {
@@ -90,7 +88,7 @@ enum class FastForwardRules(val jsonKey: String) {
     },
     ParamQEncoded("param_q_encoded") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.querySplit()?.get("q")
+            return UriKt(url).splitQuery["q"]
         }
     },
     ParamXUrlRawHttp("param_xurl_raw_http") {
@@ -100,12 +98,12 @@ enum class FastForwardRules(val jsonKey: String) {
     },
     ParamAurlEncoded("param_aurl_encoded") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.querySplit()?.get("aurl")
+            return UriKt(url).splitQuery["aurl"]
         }
     },
     ParamCapitalUrlEncoded("param_capital_url_encoded") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.querySplit()?.get("URL")
+            return UriKt(url).splitQuery["URL"]
         }
     },
     ParamRelBase64("param_rel_base64") {
@@ -120,7 +118,7 @@ enum class FastForwardRules(val jsonKey: String) {
     },
     ParamLinkBase64("param_link_base64") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.querySplit()?.get("link")?.decodeBase64()
+            return UriKt(url).splitQuery["link"]?.decodeBase64()
         }
     },
     ParamLinkEncodedBase64("param_link_encoded_base64") {
@@ -135,7 +133,7 @@ enum class FastForwardRules(val jsonKey: String) {
     },
     ParamWildcardBase64("param_wildcard_base64") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.querySplit()?.values?.firstOrNull()?.decodeBase64()
+            return UriKt(url).splitQuery.values.firstOrNull()?.decodeBase64()
         }
     },
     ParamRBase64("param_r_base64") {
@@ -178,8 +176,8 @@ enum class FastForwardRules(val jsonKey: String) {
     },
     ParamUBase64("param_u_base64") {
         override fun resolve(url: String): String? {
-            return with(URI(url)) {
-                this.query?.querySplit()?.get("u") + this.fragment
+            return with(UriKt(url)) {
+                this.splitQuery["u"] + this.fragment
             }
         }
     },
@@ -221,9 +219,9 @@ enum class FastForwardRules(val jsonKey: String) {
     },
     ParamIdReverseBase64("param_id_reverse_base64") {
         override fun resolve(url: String): String? {
-            val url = URI(url)
-            val split = url.query?.querySplit()
-            if (split?.containsKey("id") == true) {
+            val uri = UriKt(url)
+            val split = uri.splitQuery
+            if (split.containsKey("id")) {
                 var t = split["id"]?.split("")?.reversed()?.joinToString()
                 if (t?.substringNullable(-16) == "\" target=\"_blank") {
                     t = t.substringNullable(0, t.length - 16)
@@ -236,22 +234,22 @@ enum class FastForwardRules(val jsonKey: String) {
     },
     ParamTokenBase64("param_token_base64") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.querySplit()?.get("token")?.decodeBase64()
+            return UriKt(url).splitQuery.get("token")?.decodeBase64()
         }
     },
     ParamHrefEncoded("param_href_encoded") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.querySplit()?.get("href")
+            return UriKt(url).splitQuery.get("href")
         }
     },
     ParamShortEncoded("param_short_encoded") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.querySplit()?.get("short")
+            return UriKt(url).splitQuery.get("short")
         }
     },
     ParamIdBase64Replacements("param_id_base64_replacements") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.querySplit()?.get("id")?.split("!")?.joinToString("a")
+            return UriKt(url).splitQuery.get("id")?.split("!")?.joinToString("a")
                 ?.split(")")?.joinToString("e")?.split("_")?.joinToString("i")
                 ?.split("(")?.joinToString("o")?.split("*")?.joinToString("u")
                 ?.decodeBase64()
@@ -259,22 +257,22 @@ enum class FastForwardRules(val jsonKey: String) {
     },
     ParamDestEncoded("param_dest_encoded") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.querySplit()?.get("dest")
+            return UriKt(url).splitQuery["dest"]
         }
     },
     ParamGoHex("param_go_hex") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.querySplit()?.get("go")?.decodeHex()
+            return UriKt(url).splitQuery["go"]?.decodeHex()
         }
     },
     ParamToBase64("param_to_base64") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.querySplit()?.get("to")?.decodeBase64()
+            return UriKt(url).splitQuery["to"]?.decodeBase64()
         }
     },
     ParamDataBase64("param_data_base64") {
         override fun resolve(url: String): String? {
-            return URI(url).query?.querySplit()?.get("data")?.decodeBase64()
+            return UriKt(url).splitQuery["data"]?.decodeBase64()
         }
     };
 //    UseragentChrome("useragent_chrome"),
