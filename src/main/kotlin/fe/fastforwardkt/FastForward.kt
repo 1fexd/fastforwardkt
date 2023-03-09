@@ -332,7 +332,7 @@ fun wildcardToRegex(wildcard: String): Regex {
             wildcard.substring(wildcardStart.length)
         } else wildcard
 
-        append(replaceOn.replace(".", "\\.").replace("/", "\\/").replace("*", ".*"))
+        append(replaceOn.replace(".", "\\.").replace("/", "\\/").replace("*", ".*").replace("?", "\\?"))
     }.toRegex()
 }
 
