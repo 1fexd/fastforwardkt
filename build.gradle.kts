@@ -21,6 +21,10 @@ dependencies {
     testImplementation(kotlin("test"))
 }
 
+tasks.withType<Jar> {
+    exclude("fetch_latest_fastforward.sh")
+}
+
 tasks.test {
     useJUnitPlatform()
 }
