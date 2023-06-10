@@ -1,13 +1,13 @@
 package fe.fastforwardkt
 
-import getBuiltInFastForwardJson
+import FastForwardResource.getBuiltInFastForwardJson
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class GetRuleRedirectTest {
     @Test
     fun testGetRuleRedirectTest() {
-        val obj = loadFastForwardRuleJson(getBuiltInFastForwardJson()!!)
+        val obj = FastForwardLoader.loadFastForwardJson(getBuiltInFastForwardJson()!!)
         assertEquals(
             "https://ninachuba.bio.to/glas-album",
             getRuleRedirect(

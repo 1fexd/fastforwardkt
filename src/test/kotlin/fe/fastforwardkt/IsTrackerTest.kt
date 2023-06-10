@@ -1,13 +1,13 @@
 package fe.fastforwardkt
 
-import getBuiltInFastForwardJson
+import FastForwardResource.getBuiltInFastForwardJson
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class IsTrackerTest {
     @Test
-    fun testIsTracker(){
-        val obj = loadFastForwardRuleJson(getBuiltInFastForwardJson()!!)
+    fun testIsTracker() {
+        val obj = FastForwardLoader.loadFastForwardJson(getBuiltInFastForwardJson()!!)
         assertEquals(true, isTracker("https://t.co/coInA0UU8T", obj))
         assertEquals(true, isTracker("https://x.t.co/coInA0UU8T", obj))
         assertEquals(true, isTracker("https://rebrand.ly/hallo", obj))
