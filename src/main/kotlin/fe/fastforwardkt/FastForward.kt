@@ -331,12 +331,10 @@ fun wildcardToRegex(wildcard: String): Regex {
         } else wildcard
 
         append(replaceOn.replace(".", "\\.").replace("/", "\\/").replace("*", ".*").replace("?", "\\?"))
-    }.toRegex()
+    }.toRegex(RegexOption.IGNORE_CASE)
 }
 
 fun isTracker(url: String, ruleObject: JsonObject): Boolean {
     return ruleObject.array("tracker").map { wildcardToRegex(it.asJsonPrimitive.asString) }
-        .find {
-            it.matches(url)
-        } != null
+        .find { it.matches(url) } != null
 }

@@ -13,5 +13,6 @@ class IsTrackerTest {
         assertEquals(true, isTracker("https://rebrand.ly/hallo", obj))
         assertEquals(true, isTracker("https://shareasale-analytics.com/r.cfm?yeet=test", obj))
         assertEquals(false, isTracker("https://lol.shareasale-analytics.com/r.cfm?yeet=test", obj))
+        assertEquals(true, isTracker("https://T.CO/coInA0UU8T", obj))
     }
 }
