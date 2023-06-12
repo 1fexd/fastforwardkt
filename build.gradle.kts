@@ -16,13 +16,11 @@ repositories {
 }
 
 dependencies {
-    api("com.gitlab.grrfe:GSONKtExtensions:2.1.2")
-    api("com.google.code.gson:gson:2.10.1")
     testImplementation(kotlin("test"))
 }
 
 tasks.withType<Jar> {
-    exclude("fetch_latest_fastforward.sh")
+    exclude("fetch_latest.sh")
 }
 
 tasks.test {

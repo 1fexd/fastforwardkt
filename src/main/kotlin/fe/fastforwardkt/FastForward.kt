@@ -1,10 +1,8 @@
 package fe.fastforwardkt
 
-import com.google.gson.JsonObject
 import fe.fastforwardkt.ext.substringNullable
-import fe.gson.extensions.array
 
-enum class FastForwardRules(val jsonKey: String) {
+enum class Rules(val jsonKey: String) {
     PathBase64("path_base64") {
         override fun resolve(url: String): String? {
             return url.substringNullable(url.indexOf("aHR0c"))?.decodeBase64()
@@ -67,7 +65,7 @@ enum class FastForwardRules(val jsonKey: String) {
                 uri = uri.split("&")[0].decodeUrl()
             } else {
                 if (uri?.substringNullable(0, 7) != "http://" && uri?.substringNullable(0, 8) != "https://") {
-                    uri = "http://" + uri
+                    uri = "http://$uri"
                 }
                 uri += UriKt(uri).fragment
             }
@@ -175,7 +173,7 @@ enum class FastForwardRules(val jsonKey: String) {
         }
     },
     ParamUBase64("param_u_base64") {
-        override fun resolve(url: String): String? {
+        override fun resolve(url: String): String {
             return with(UriKt(url)) {
                 this.splitQuery["u"] + this.fragment
             }
@@ -234,22 +232,22 @@ enum class FastForwardRules(val jsonKey: String) {
     },
     ParamTokenBase64("param_token_base64") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery.get("token")?.decodeBase64()
+            return UriKt(url).splitQuery["token"]?.decodeBase64()
         }
     },
     ParamHrefEncoded("param_href_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery.get("href")
+            return UriKt(url).splitQuery["href"]
         }
     },
     ParamShortEncoded("param_short_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery.get("short")
+            return UriKt(url).splitQuery["short"]
         }
     },
     ParamIdBase64Replacements("param_id_base64_replacements") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery.get("id")?.split("!")?.joinToString("a")
+            return UriKt(url).splitQuery["id"]?.split("!")?.joinToString("a")
                 ?.split(")")?.joinToString("e")?.split("_")?.joinToString("i")
                 ?.split("(")?.joinToString("o")?.split("*")?.joinToString("u")
                 ?.decodeBase64()
@@ -288,53 +286,33 @@ enum class FastForwardRules(val jsonKey: String) {
 //    LinkvertiseSafeIn("linkvertise_safe_in");
 
     companion object {
-        fun findByJsonKeyName(jsonKey: String) = FastForwardRules.values().find { it.jsonKey == jsonKey }
+        val rulesCached = values().associateBy { it.jsonKey }
     }
 
     abstract fun resolve(url: String): String?
 }
 
-fun getRuleRedirect(url: String, ruleObject: JsonObject, debugPrint: Boolean = false): String? {
-    ruleObject.keySet().mapNotNull { key ->
-        if (ruleObject.get(key).isJsonArray) {
-            key to ruleObject.array(key)
-        } else null
-    }.forEach { (key, array) ->
-        val rule = FastForwardRules.findByJsonKeyName(key)
-        if (debugPrint) {
-            println("No rule found for $key")
-        }
-
+fun getRuleRedirect(url: String, debugPrint: Boolean = false): String? {
+    FastForwardRules.rules.map { (key, regexes) ->
+        val rule = Rules.rulesCached[key]
         if (rule != null) {
-            array.map { wildcardToRegex(it.asJsonPrimitive.asString) }.forEach { regex ->
+            regexes.forEach { regex ->
                 if (regex.matches(url)) {
                     if (debugPrint) {
                         println("Regex $regex matches $url")
                     }
+
                     return rule.resolve(url)
                 }
             }
+        } else if (debugPrint) {
+            println("No rule found for $key")
         }
     }
 
     return null
 }
 
-const val wildcardStart = "*://*."
-const val wildcardStartRegex = ".*:\\/\\/.*"
-
-fun wildcardToRegex(wildcard: String): Regex {
-    return buildString {
-        val replaceOn = if (wildcard.startsWith(wildcardStart)) {
-            append(wildcard.substring(0, wildcardStart.length).replace(wildcardStart, wildcardStartRegex))
-            wildcard.substring(wildcardStart.length)
-        } else wildcard
-
-        append(replaceOn.replace(".", "\\.").replace("/", "\\/").replace("*", ".*").replace("?", "\\?"))
-    }.toRegex(RegexOption.IGNORE_CASE)
-}
-
-fun isTracker(url: String, ruleObject: JsonObject): Boolean {
-    return ruleObject.array("tracker").map { wildcardToRegex(it.asJsonPrimitive.asString) }
-        .find { it.matches(url) } != null
+fun isTracker(url: String): Boolean {
+    return FastForwardRules.rules["tracker"]?.find { it.matches(url) } != null
 }
