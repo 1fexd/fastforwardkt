@@ -337,8 +337,10 @@ object FastForwardRules {
             Regex(".*:\\/\\/analytics\\.supplyframe\\.com\\/.*", RegexOption.IGNORE_CASE),
             Regex(".*:\\/\\/clg\\.am\\/.*", RegexOption.IGNORE_CASE),
             Regex(".*:\\/\\/rebrand\\.ly\\/.*", RegexOption.IGNORE_CASE),
-            Regex("https?:\\/\\/tinyurl\\.com\\/(?!app).*", RegexOption.IGNORE_CASE),
-            Regex("https?:\\/\\/rb\\.gy\\/.*", RegexOption.IGNORE_CASE)
+            Regex(".*:\\/\\/rb\\.gy\\/.*", RegexOption.IGNORE_CASE),
+            Regex("https?:\\/\\/tinyurl\\.com\\/(?!app).+", RegexOption.IGNORE_CASE),
+            Regex("https?:\\/\\/buff\\.ly\\/.+", RegexOption.IGNORE_CASE),
+            Regex("https?:\\/\\/trib\\.al\\/.+", RegexOption.IGNORE_CASE)
         ),
         "tracker_force_http" to listOf(
             Regex("https?:\\/\\/ow.ly\\/.*", RegexOption.IGNORE_CASE),
