@@ -1,7 +1,5 @@
 package fe.fastforwardkt
 
-import fe.fastforwardkt.ext.substringNullable
-
 enum class Rules(val jsonKey: String) {
     PathBase64("path_base64") {
         override fun resolve(url: String): String? {
@@ -76,7 +74,7 @@ enum class Rules(val jsonKey: String) {
     },
     ParamUrlEncoded("param_url_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery["url"]
+            return UriKt(url).querySplit["url"]
         }
     },
     ParamUrlRaw("param_url_raw") {
@@ -86,7 +84,7 @@ enum class Rules(val jsonKey: String) {
     },
     ParamQEncoded("param_q_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery["q"]
+            return UriKt(url).querySplit["q"]
         }
     },
     ParamXUrlRawHttp("param_xurl_raw_http") {
@@ -96,12 +94,12 @@ enum class Rules(val jsonKey: String) {
     },
     ParamAurlEncoded("param_aurl_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery["aurl"]
+            return UriKt(url).querySplit["aurl"]
         }
     },
     ParamCapitalUrlEncoded("param_capital_url_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery["URL"]
+            return UriKt(url).querySplit["URL"]
         }
     },
     ParamRelBase64("param_rel_base64") {
@@ -116,7 +114,7 @@ enum class Rules(val jsonKey: String) {
     },
     ParamLinkBase64("param_link_base64") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery["link"]?.decodeBase64()
+            return UriKt(url).querySplit["link"]?.decodeBase64()
         }
     },
     ParamLinkEncodedBase64("param_link_encoded_base64") {
@@ -131,7 +129,7 @@ enum class Rules(val jsonKey: String) {
     },
     ParamWildcardBase64("param_wildcard_base64") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery.values.firstOrNull()?.decodeBase64()
+            return UriKt(url).querySplit.values.firstOrNull()?.decodeBase64()
         }
     },
     ParamRBase64("param_r_base64") {
@@ -175,7 +173,7 @@ enum class Rules(val jsonKey: String) {
     ParamUBase64("param_u_base64") {
         override fun resolve(url: String): String {
             return with(UriKt(url)) {
-                this.splitQuery["u"] + this.fragment
+                this.querySplit["u"] + this.fragment
             }
         }
     },
@@ -218,7 +216,7 @@ enum class Rules(val jsonKey: String) {
     ParamIdReverseBase64("param_id_reverse_base64") {
         override fun resolve(url: String): String? {
             val uri = UriKt(url)
-            val split = uri.splitQuery
+            val split = uri.querySplit
             if (split.containsKey("id")) {
                 var t = split["id"]?.split("")?.reversed()?.joinToString()
                 if (t?.substringNullable(-16) == "\" target=\"_blank") {
@@ -232,22 +230,22 @@ enum class Rules(val jsonKey: String) {
     },
     ParamTokenBase64("param_token_base64") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery["token"]?.decodeBase64()
+            return UriKt(url).querySplit["token"]?.decodeBase64()
         }
     },
     ParamHrefEncoded("param_href_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery["href"]
+            return UriKt(url).querySplit["href"]
         }
     },
     ParamShortEncoded("param_short_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery["short"]
+            return UriKt(url).querySplit["short"]
         }
     },
     ParamIdBase64Replacements("param_id_base64_replacements") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery["id"]?.split("!")?.joinToString("a")
+            return UriKt(url).querySplit["id"]?.split("!")?.joinToString("a")
                 ?.split(")")?.joinToString("e")?.split("_")?.joinToString("i")
                 ?.split("(")?.joinToString("o")?.split("*")?.joinToString("u")
                 ?.decodeBase64()
@@ -255,22 +253,22 @@ enum class Rules(val jsonKey: String) {
     },
     ParamDestEncoded("param_dest_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery["dest"]
+            return UriKt(url).querySplit["dest"]
         }
     },
     ParamGoHex("param_go_hex") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery["go"]?.decodeHex()
+            return UriKt(url).querySplit["go"]?.decodeHex()
         }
     },
     ParamToBase64("param_to_base64") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery["to"]?.decodeBase64()
+            return UriKt(url).querySplit["to"]?.decodeBase64()
         }
     },
     ParamDataBase64("param_data_base64") {
         override fun resolve(url: String): String? {
-            return UriKt(url).splitQuery["data"]?.decodeBase64()
+            return UriKt(url).querySplit["data"]?.decodeBase64()
         }
     };
 //    UseragentChrome("useragent_chrome"),

@@ -14,13 +14,3 @@ fun String.decodeHex(): String {
 
     return list.map { Character.toChars(it) }.joinToString()
 }
-
-fun String.querySplit(): Map<String, String> {
-    return this.split("&").mapNotNull {
-        with(it.split("=")) {
-            if (this.size == 2) {
-                this[0] to this[1]
-            } else null
-        }
-    }.toMap()
-}
