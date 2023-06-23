@@ -14,6 +14,8 @@ repositories {
 }
 
 dependencies {
+    implementation("com.github.1fexd:uriparser:0.0.7")
+
     testImplementation(kotlin("test"))
 }
 

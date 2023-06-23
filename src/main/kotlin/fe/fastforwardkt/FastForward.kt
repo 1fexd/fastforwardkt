@@ -1,5 +1,7 @@
 package fe.fastforwardkt
 
+import fe.uribuilder.UriParser
+
 enum class Rules(val jsonKey: String) {
     PathBase64("path_base64") {
         override fun resolve(url: String): String? {
@@ -33,25 +35,24 @@ enum class Rules(val jsonKey: String) {
         }
     },
     QueryRaw("query_raw") {
-        override fun resolve(url: String): String? {
-            val uri = UriKt(url)
+        override fun resolve(url: String): String {
+            val parsedUri = UriParser.parseUri(url)
             // no fe.fastforwardkt.ext.substringNullable needed as in java, query does not start with ?
-            return uri.query + uri.fragment
+            return parsedUri.uri.query + parsedUri.fragment
         }
     },
     QueryBase64("query_base64") {
         override fun resolve(url: String): String? {
-            return UriKt(url).query?.decodeBase64()
+            return UriParser.parseUri(url).uri.query?.decodeBase64()
         }
     },
     HashBase64("hash_base64") {
         override fun resolve(url: String): String? {
-            return UriKt(url).fragment?.decodeBase64()
+            return UriParser.parseUri(url).fragment?.decodeBase64()
         }
     },
     ParamUrlGeneral("param_url_general") {
         override fun resolve(url: String): String? {
-            val inputUrl = url
             var uri = url.substringNullable(url.indexOf("&url=") + 5)
             if (uri?.substringNullable(0, 5) == "aHR0c" || uri?.substringNullable(0, 7) == "bWFnbmV") {
                 uri = uri.split("&")[0].decodeBase64()
@@ -65,7 +66,8 @@ enum class Rules(val jsonKey: String) {
                 if (uri?.substringNullable(0, 7) != "http://" && uri?.substringNullable(0, 8) != "https://") {
                     uri = "http://$uri"
                 }
-                uri += UriKt(uri).fragment
+
+                uri += UriParser.parseUri(uri).fragment
             }
 
             // TODO: return referrer
@@ -74,7 +76,7 @@ enum class Rules(val jsonKey: String) {
     },
     ParamUrlEncoded("param_url_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).querySplit["url"]
+            return getQueryParam(url, "url")
         }
     },
     ParamUrlRaw("param_url_raw") {
@@ -84,7 +86,7 @@ enum class Rules(val jsonKey: String) {
     },
     ParamQEncoded("param_q_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).querySplit["q"]
+            return getQueryParam(url, "q")
         }
     },
     ParamXUrlRawHttp("param_xurl_raw_http") {
@@ -94,12 +96,12 @@ enum class Rules(val jsonKey: String) {
     },
     ParamAurlEncoded("param_aurl_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).querySplit["aurl"]
+            return getQueryParam(url, "aurl")
         }
     },
     ParamCapitalUrlEncoded("param_capital_url_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).querySplit["URL"]
+            return getQueryParam(url, "URL")
         }
     },
     ParamRelBase64("param_rel_base64") {
@@ -114,7 +116,7 @@ enum class Rules(val jsonKey: String) {
     },
     ParamLinkBase64("param_link_base64") {
         override fun resolve(url: String): String? {
-            return UriKt(url).querySplit["link"]?.decodeBase64()
+            return getQueryParam(url, "link")?.decodeBase64()
         }
     },
     ParamLinkEncodedBase64("param_link_encoded_base64") {
@@ -129,7 +131,7 @@ enum class Rules(val jsonKey: String) {
     },
     ParamWildcardBase64("param_wildcard_base64") {
         override fun resolve(url: String): String? {
-            return UriKt(url).querySplit.values.firstOrNull()?.decodeBase64()
+            return UriParser.parseUri(url).queryParams.firstOrNull()?.value?.decodeBase64()
         }
     },
     ParamRBase64("param_r_base64") {
@@ -172,9 +174,8 @@ enum class Rules(val jsonKey: String) {
     },
     ParamUBase64("param_u_base64") {
         override fun resolve(url: String): String {
-            return with(UriKt(url)) {
-                this.querySplit["u"] + this.fragment
-            }
+            val uri = UriParser.parseUri(url)
+            return uri.getFirstQueryParam("u")?.value + uri.fragment
         }
     },
     ParamGoBase64("param_go_base64") {
@@ -215,10 +216,10 @@ enum class Rules(val jsonKey: String) {
     },
     ParamIdReverseBase64("param_id_reverse_base64") {
         override fun resolve(url: String): String? {
-            val uri = UriKt(url)
-            val split = uri.querySplit
-            if (split.containsKey("id")) {
-                var t = split["id"]?.split("")?.reversed()?.joinToString()
+            val uri = UriParser.parseUri(url)
+            val param = uri.getFirstQueryParam("id")
+            if (param != null) {
+                var t = param.value?.split("")?.reversed()?.joinToString()
                 if (t?.substringNullable(-16) == "\" target=\"_blank") {
                     t = t.substringNullable(0, t.length - 16)
                 }
@@ -230,22 +231,22 @@ enum class Rules(val jsonKey: String) {
     },
     ParamTokenBase64("param_token_base64") {
         override fun resolve(url: String): String? {
-            return UriKt(url).querySplit["token"]?.decodeBase64()
+            return getQueryParam(url, "token")?.decodeBase64()
         }
     },
     ParamHrefEncoded("param_href_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).querySplit["href"]
+            return getQueryParam(url, "short")
         }
     },
     ParamShortEncoded("param_short_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).querySplit["short"]
+            return getQueryParam(url, "short")
         }
     },
     ParamIdBase64Replacements("param_id_base64_replacements") {
         override fun resolve(url: String): String? {
-            return UriKt(url).querySplit["id"]?.split("!")?.joinToString("a")
+            return getQueryParam(url, "id")?.split("!")?.joinToString("a")
                 ?.split(")")?.joinToString("e")?.split("_")?.joinToString("i")
                 ?.split("(")?.joinToString("o")?.split("*")?.joinToString("u")
                 ?.decodeBase64()
@@ -253,22 +254,22 @@ enum class Rules(val jsonKey: String) {
     },
     ParamDestEncoded("param_dest_encoded") {
         override fun resolve(url: String): String? {
-            return UriKt(url).querySplit["dest"]
+            return getQueryParam(url, "dest")
         }
     },
     ParamGoHex("param_go_hex") {
         override fun resolve(url: String): String? {
-            return UriKt(url).querySplit["go"]?.decodeHex()
+            return getQueryParam(url, "go")?.decodeBase64()
         }
     },
     ParamToBase64("param_to_base64") {
         override fun resolve(url: String): String? {
-            return UriKt(url).querySplit["to"]?.decodeBase64()
+            return getQueryParam(url, "to")?.decodeBase64()
         }
     },
     ParamDataBase64("param_data_base64") {
         override fun resolve(url: String): String? {
-            return UriKt(url).querySplit["data"]?.decodeBase64()
+            return getQueryParam(url, "data")?.decodeBase64()
         }
     };
 //    UseragentChrome("useragent_chrome"),
@@ -289,6 +290,9 @@ enum class Rules(val jsonKey: String) {
 
     abstract fun resolve(url: String): String?
 }
+
+private fun getQueryParam(url: String, param: String) = UriParser.parseUri(url).getFirstQueryParam(param)?.value
+
 
 fun getRuleRedirect(url: String, debugPrint: Boolean = false): String? {
     FastForwardRules.rules.map { (key, regexes) ->
