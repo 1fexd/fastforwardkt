@@ -340,7 +340,8 @@ object FastForwardRules {
             Regex(".*:\\/\\/rb\\.gy\\/.*", RegexOption.IGNORE_CASE),
             Regex("https?:\\/\\/tinyurl\\.com\\/(?!app).+", RegexOption.IGNORE_CASE),
             Regex("https?:\\/\\/buff\\.ly\\/.+", RegexOption.IGNORE_CASE),
-            Regex("https?:\\/\\/trib\\.al\\/.+", RegexOption.IGNORE_CASE)
+            Regex("https?:\\/\\/trib\\.al\\/.+", RegexOption.IGNORE_CASE),
+            Regex("https?:\\/\\/is\\.gd\\/.+$(?<!\\.php)", RegexOption.IGNORE_CASE)
         ),
         "tracker_force_http" to listOf(
             Regex("https?:\\/\\/ow.ly\\/.*", RegexOption.IGNORE_CASE),
