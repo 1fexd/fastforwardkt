@@ -1,6 +1,7 @@
 package fe.fastforwardkt
 
 import fe.uribuilder.UriParser
+import java.io.PrintStream
 
 enum class Rules(val jsonKey: String) {
     PathBase64("path_base64") {
@@ -294,21 +295,18 @@ enum class Rules(val jsonKey: String) {
 private fun getQueryParam(url: String, param: String) = UriParser.parseUri(url).getFirstQueryParam(param)?.value
 
 
-fun getRuleRedirect(url: String, debugPrint: Boolean = false): String? {
+fun getRuleRedirect(url: String, debugWriter: PrintStream? = null): String? {
     FastForwardRules.rules.map { (key, regexes) ->
         val rule = Rules.rulesCached[key]
         if (rule != null) {
             regexes.forEach { regex ->
                 if (regex.matches(url)) {
-                    if (debugPrint) {
-                        println("Regex $regex matches $url")
-                    }
-
+                    debugWriter?.println("Regex $regex matches $url")
                     return rule.resolve(url)
                 }
             }
-        } else if (debugPrint) {
-            println("No rule found for $key")
+        } else {
+            debugWriter?.println("No rule found for $key")
         }
     }
 

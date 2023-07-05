@@ -10,7 +10,7 @@ class GetRuleRedirectTest {
             "https://ninachuba.bio.to/glas-album",
             getRuleRedirect(
                 "https://www.youtube.com/redirect?event=video_description&redir_token=TOKEN_LEL&q=https%3A%2F%2Fninachuba.bio.to%2Fglas-album&v=D3RG2O03wsI",
-                debugPrint = true
+                System.out
             )
         )
 
@@ -18,7 +18,7 @@ class GetRuleRedirectTest {
             null,
             getRuleRedirect(
                 "https://www.humblebundle.com/games/humble-heroines-warriors-dreamers-and-god-slayers?partner=caschysblog",
-                debugPrint = true
+                System.out
             )
         )
     }
