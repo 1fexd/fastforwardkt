@@ -1,2 +1,4 @@
 #!/bin/bash
-wget https://raw.githubusercontent.com/1fexd/fastforward-ext/master/output/FastForwardRules.kt -O ../kotlin/fe/fastforwardkt/FastForwardRules.kt
+
+DOWNLOAD_URL=$(curl -ILs -o /dev/null -w %{url_effective} https://github.com/1fexd/fastforward-ext/releases/latest | sed "s/tag/download/")
+wget "${DOWNLOAD_URL}/FastForwardRules.kt" -O ../kotlin/fe/fastforwardkt/FastForwardRules.kt
