@@ -1,5 +1,6 @@
 package fe.fastforwardkt
 
+import fe.fastforwardkt.FastForward.isTracker
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
