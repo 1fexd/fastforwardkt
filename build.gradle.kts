@@ -13,7 +13,7 @@ version = versioning.info.tag ?: versioning.info.full
 
 repositories {
     mavenCentral()
-    maven(url="https://jitpack.io")
+    maven(url = "https://jitpack.io")
 }
 
 val implementation: Configuration by configurations
@@ -36,9 +36,21 @@ val shadowJarTask = tasks.named<ShadowJar>("shadowJar") {
     mergeServiceFiles()
     exclude("META-INF/**/*", "*.sh")
 
-    listOf("fe").forEach { pkg ->
-        relocate(pkg, "${project.group}.internal$pkg")
+    val pkgs = mutableSetOf<String>()
+    val visitor = object : FileVisitor {
+        override fun visitDir(dirDetails: FileVisitDetails) {}
+        override fun visitFile(fileDetails: FileVisitDetails) {
+            if (fileDetails.relativePath.segments[0] != "META-INF") {
+                pkgs.add(fileDetails.relativePath.segments.let { it.take(it.size - 1) }.joinToString("."))
+            }
+        }
     }
+
+    shadowImplementation.resolvedConfiguration.firstLevelModuleDependencies.flatMap { dependencies ->
+        dependencies.moduleArtifacts.map { artifact -> artifact.file }
+    }.forEach { zipTree(it).visit(visitor) }
+
+    pkgs.forEach { pkg -> relocate(pkg, "${project.group}.internal$pkg") }
 
     archiveClassifier.set("")
     minimize()
@@ -68,4 +80,3 @@ tasks.whenTaskAdded {
         dependsOn(shadowJarTask)
     }
 }
-
