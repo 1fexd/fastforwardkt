@@ -17,9 +17,10 @@ repositories {
     maven(url = "https://jitpack.io")
 }
 
-val implementation: Configuration by configurations
-val shadowImplementation: Configuration by configurations.creating
-implementation.extendsFrom(shadowImplementation)
+val shadowImplementation = configurations.create("shadowImplementation"){
+    configurations.implementation.get().extendsFrom(this)
+    isTransitive = true
+}
 
 dependencies {
     api(kotlin("stdlib"))
