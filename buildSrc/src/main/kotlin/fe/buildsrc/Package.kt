@@ -13,7 +13,7 @@ object Package {
             override fun visitFile(fileDetails: FileVisitDetails) {
                 if (fileDetails.relativePath.segments[0] != "META-INF") {
                     val pkg = fileDetails.relativePath.segments.let { it.take(it.size - 1) }.joinToString(".")
-                    pkgs[pkg] = "$destination.$pkg"
+                    pkgs[pkg] = "$destination.internal.$pkg"
                 }
             }
         }
