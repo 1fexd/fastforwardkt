@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import fe.buildsrc.Package.relocatePackages
 
 plugins {
     kotlin("jvm") version "1.9.22"
@@ -36,21 +37,9 @@ val shadowJarTask = tasks.named<ShadowJar>("shadowJar") {
     mergeServiceFiles()
     exclude("META-INF/**/*", "*.sh")
 
-    val pkgs = mutableSetOf<String>()
-    val visitor = object : FileVisitor {
-        override fun visitDir(dirDetails: FileVisitDetails) {}
-        override fun visitFile(fileDetails: FileVisitDetails) {
-            if (fileDetails.relativePath.segments[0] != "META-INF") {
-                pkgs.add(fileDetails.relativePath.segments.let { it.take(it.size - 1) }.joinToString("."))
-            }
-        }
+    project.relocatePackages(shadowImplementation, project.group.toString()).forEach { (from, to) ->
+        relocate(from, to)
     }
-
-    shadowImplementation.resolvedConfiguration.firstLevelModuleDependencies.flatMap { dependencies ->
-        dependencies.moduleArtifacts.map { artifact -> artifact.file }
-    }.forEach { zipTree(it).visit(visitor) }
-
-    pkgs.forEach { pkg -> relocate(pkg, "${project.group}.internal$pkg") }
 
     archiveClassifier.set("")
     minimize()
