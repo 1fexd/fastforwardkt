@@ -23,7 +23,7 @@ implementation.extendsFrom(shadowImplementation)
 dependencies {
     api(kotlin("stdlib"))
 
-    shadowImplementation("com.github.1fexd:uriparser:0.0.10")
+    shadowImplementation("com.github.1fexd:uriparser:0.0.7")
 
     testImplementation(kotlin("test"))
 }
