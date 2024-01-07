@@ -1,5 +1,6 @@
 package fe.fastforwardkt
 
+import fe.fastforwardkt.FastForward.getRuleRedirect
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
