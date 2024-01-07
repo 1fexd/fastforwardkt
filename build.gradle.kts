@@ -19,7 +19,7 @@ repositories {
 
 val shadowImplementation = configurations.create("shadowImplementation"){
     configurations.implementation.get().extendsFrom(this)
-    isTransitive = true
+    isTransitive = false
 }
 
 dependencies {
