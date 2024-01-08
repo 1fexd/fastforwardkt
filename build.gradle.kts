@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import fe.buildsrc.Package.relocatePackages
 
 plugins {
     kotlin("jvm") version "1.9.22"
@@ -13,12 +14,13 @@ version = versioning.info.tag ?: versioning.info.full
 
 repositories {
     mavenCentral()
-    maven(url="https://jitpack.io")
+    maven(url = "https://jitpack.io")
 }
 
-val implementation: Configuration by configurations
-val shadowImplementation: Configuration by configurations.creating
-implementation.extendsFrom(shadowImplementation)
+val shadowImplementation = configurations.create("shadowImplementation"){
+    configurations.implementation.get().extendsFrom(this)
+    isTransitive = false
+}
 
 dependencies {
     api(kotlin("stdlib"))
@@ -36,12 +38,11 @@ val shadowJarTask = tasks.named<ShadowJar>("shadowJar") {
     mergeServiceFiles()
     exclude("META-INF/**/*", "*.sh")
 
-    listOf("fe").forEach { pkg ->
-        relocate(pkg, "${project.group}.internal$pkg")
+    project.relocatePackages(shadowImplementation, "com.github.1fexd.fastforwardkt").forEach { (from, to) ->
+        relocate(from, to)
     }
 
     archiveClassifier.set("")
-    minimize()
     configurations = listOf(shadowImplementation)
 }
 
@@ -68,4 +69,3 @@ tasks.whenTaskAdded {
         dependsOn(shadowJarTask)
     }
 }
-
