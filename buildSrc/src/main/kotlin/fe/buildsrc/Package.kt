@@ -2,7 +2,9 @@ package fe.buildsrc
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.file.FileVisitDetails
+import org.gradle.api.file.FileVisitor
 
 object Package {
     private const val MERGE_PKG: String = "__bundled.dependencies"
@@ -15,18 +17,47 @@ object Package {
         return null
     }
 
+    private fun ResolvedDependency.toPackage(): List<String> {
+        val version = moduleVersion.replace("-", "___")
+            .split(".")
+            .toTypedArray()
+
+        return listOf(moduleGroup, moduleName, *version)
+    }
+
+    private fun fix(pkg: List<String>): String {
+        return pkg.joinToString(".") { if (it[0].isDigit()) "_$it" else it }
+    }
+
+    class Visitor(
+        private val self: String, private val dependency: ResolvedDependency, private val packages: MutableMap<String, String>
+    ) : FileVisitor {
+        override fun visitDir(dirDetails: FileVisitDetails) {}
+
+        override fun visitFile(fileDetails: FileVisitDetails) {
+            val parentDir = fileDetails.toParentDir() ?: return
+
+            val newPkg = listOf(
+                MERGE_PKG,
+                fix(self.split(".")),
+                fix(dependency.toPackage()),
+                parentDir
+            ).joinToString(".")
+
+            packages[parentDir] = newPkg
+        }
+    }
+
     fun Project.relocatePackages(configuration: Configuration, self: String): Map<String, String> {
         val pkgs = mutableMapOf<String, String>()
-        configuration.resolvedConfiguration.firstLevelModuleDependencies.forEach { dependency ->
-            dependency.moduleArtifacts.forEach { artifact ->
-                zipTree(artifact.file).visit {
-                    if (!isDirectory) {
-                        toParentDir()?.let { pkg ->
-                            pkgs[pkg] = "$MERGE_PKG.$self.${dependency.moduleGroup}.${dependency.moduleName}.${dependency.moduleVersion}.$pkg".replace("-", "_")
-                        }
-                    }
-                }
-            }
+
+        val dependencies = configuration.resolvedConfiguration.firstLevelModuleDependencies.flatMap { dependency ->
+            val visitor = Visitor(self, dependency, pkgs)
+            dependency.moduleArtifacts.map { artifact -> visitor to artifact }
+        }
+
+        dependencies.forEach { (visitor, artifact) ->
+            zipTree(artifact.file).visit(visitor)
         }
 
         return pkgs
