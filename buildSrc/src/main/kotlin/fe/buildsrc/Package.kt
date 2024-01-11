@@ -18,11 +18,9 @@ object Package {
     }
 
     private fun ResolvedDependency.toPackage(): List<String> {
-        val version = moduleVersion.replace("-", "___")
-            .split(".")
-            .toTypedArray()
-
-        return listOf(moduleGroup, moduleName, *version)
+        return listOf(moduleGroup, moduleName, moduleVersion.replace("-", "___")).flatMap {
+            it.split(".")
+        }
     }
 
     private fun fix(pkg: List<String>): String {
@@ -30,7 +28,9 @@ object Package {
     }
 
     class Visitor(
-        private val self: String, private val dependency: ResolvedDependency, private val packages: MutableMap<String, String>
+        private val self: String,
+        private val dependency: ResolvedDependency,
+        private val packages: MutableMap<String, String>
     ) : FileVisitor {
         override fun visitDir(dirDetails: FileVisitDetails) {}
 
