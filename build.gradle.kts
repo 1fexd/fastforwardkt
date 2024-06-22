@@ -5,7 +5,7 @@ plugins {
     kotlin("jvm") version "1.9.24"
     `java-library`
     `maven-publish`
-    id("net.nemerosa.versioning") version "3.0.0"
+    id("net.nemerosa.versioning") version "3.1.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
