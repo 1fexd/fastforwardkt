@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import fe.buildsrc.Package.relocatePackages
 
 plugins {
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "1.9.23"
     `java-library`
     `maven-publish`
     id("net.nemerosa.versioning") version "3.0.0"
@@ -17,15 +17,19 @@ repositories {
     maven(url = "https://jitpack.io")
 }
 
-val shadowImplementation = configurations.create("shadowImplementation"){
-    configurations.implementation.get().extendsFrom(this)
+val implementation by configurations
+val shadowImplementation = configurations.create("shadowImplementation") {
+    implementation.extendsFrom(this)
     isTransitive = false
 }
 
 dependencies {
     api(kotlin("stdlib"))
 
-    shadowImplementation("com.github.1fexd:uriparser:0.0.7")
+    implementation("fe.uribuilder:uriparser")
+//    bundledDependency("com.gitlab.grrfe:gson-ext:11.0.0")
+//    bundledDependency("com.google.code.gson:gson:2.10.1")
+//    bundledDependency("com.github.1fexd:uriparser:0.0.7")
 
     testImplementation(kotlin("test"))
 }
@@ -34,38 +38,32 @@ kotlin {
     jvmToolchain(17)
 }
 
-val shadowJarTask = tasks.named<ShadowJar>("shadowJar") {
-    mergeServiceFiles()
-    exclude("META-INF/**/*", "*.sh")
 
-    project.relocatePackages(shadowImplementation, "com.github.1fexd.fastforwardkt").forEach { (from, to) ->
-        relocate(from, to)
-    }
 
-    archiveClassifier.set("")
-    configurations = listOf(shadowImplementation)
-}
-
-tasks.named("jar").configure {
-    enabled = false
-}
+//tasks.named("jar").configure {
+//    enabled = false
+//}
 
 tasks.test {
     useJUnitPlatform()
 }
 
+
 publishing {
     publications {
-        create<MavenPublication>("shadow") {
-            setArtifacts(listOf(shadowJarTask.get()))
+        create<MavenPublication>("maven") {
             groupId = project.group.toString()
             version = project.version.toString()
-        }
-    }
-}
 
-tasks.whenTaskAdded {
-    if (name == "generateMetadataFileForPluginShadowPublication") {
-        dependsOn(shadowJarTask)
+            from(components["java"])
+        }
+
+//        create<MavenPublication>("shadow") {
+//            groupId = project.group.toString()
+//            version = project.version.toString()
+//
+//
+//            shadow.component(this)
+//        }
     }
 }

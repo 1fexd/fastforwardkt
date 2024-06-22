@@ -28,7 +28,7 @@ object Package {
     }
 
     class Visitor(
-        private val self: String,
+//        private val self: String,
         private val dependency: ResolvedDependency,
         private val packages: MutableMap<String, String>
     ) : FileVisitor {
@@ -39,7 +39,7 @@ object Package {
 
             val newPkg = listOf(
                 MERGE_PKG,
-                fix(self.split(".")),
+//                fix(self.split(".")),
                 fix(dependency.toPackage()),
                 parentDir
             ).joinToString(".")
@@ -48,11 +48,11 @@ object Package {
         }
     }
 
-    fun Project.relocatePackages(configuration: Configuration, self: String): Map<String, String> {
+    fun Project.relocatePackages(configuration: Configuration): Map<String, String> {
         val pkgs = mutableMapOf<String, String>()
 
         val dependencies = configuration.resolvedConfiguration.firstLevelModuleDependencies.flatMap { dependency ->
-            val visitor = Visitor(self, dependency, pkgs)
+            val visitor = Visitor(dependency, pkgs)
             dependency.moduleArtifacts.map { artifact -> visitor to artifact }
         }
 

@@ -1,5 +1,6 @@
 package fe.fastforwardkt
 
+import fe.uribuilder.UriParseResult
 import fe.uribuilder.UriParser
 import java.io.PrintStream
 
@@ -39,20 +40,28 @@ object FastForward {
             }
         },
         QueryRaw("query_raw") {
-            override fun resolve(url: String): String {
-                val parsedUri = UriParser.parseUri(url)
+            override fun resolve(url: String): String? {
                 // no fe.fastforwardkt.ext.substringNullable needed as in java, query does not start with ?
-                return parsedUri.uri.query + parsedUri.fragment
+                val uri = UriParser.parseUri(url)
+                if (uri !is UriParseResult.ParsedUri) return null
+
+                return uri.uri.query + uri.fragment
             }
         },
         QueryBase64("query_base64") {
             override fun resolve(url: String): String? {
-                return UriParser.parseUri(url).uri.query?.decodeBase64()
+                val uri = UriParser.parseUri(url)
+                if (uri !is UriParseResult.ParsedUri) return null
+
+                return uri.uri.query?.decodeBase64()
             }
         },
         HashBase64("hash_base64") {
             override fun resolve(url: String): String? {
-                return UriParser.parseUri(url).fragment?.decodeBase64()
+                val parsedUri = UriParser.parseUri(url)
+                if (parsedUri !is UriParseResult.ParsedUri) return null
+
+                return parsedUri.fragment?.decodeBase64()
             }
         },
         ParamUrlGeneral("param_url_general") {
@@ -71,7 +80,10 @@ object FastForward {
                         uri = "http://$uri"
                     }
 
-                    uri += UriParser.parseUri(uri).fragment
+                    val parsedUri = UriParser.parseUri(url)
+                    if (parsedUri !is UriParseResult.ParsedUri) return null
+
+                    uri += parsedUri.fragment
                 }
 
                 // TODO: return referrer
@@ -135,7 +147,10 @@ object FastForward {
         },
         ParamWildcardBase64("param_wildcard_base64") {
             override fun resolve(url: String): String? {
-                return UriParser.parseUri(url).queryParams.firstOrNull()?.value?.decodeBase64()
+                val uri = UriParser.parseUri(url)
+                if (uri !is UriParseResult.ParsedUri) return null
+
+                return uri.queryParams.firstOrNull()?.value?.decodeBase64()
             }
         },
         ParamRBase64("param_r_base64") {
@@ -177,8 +192,10 @@ object FastForward {
             }
         },
         ParamUBase64("param_u_base64") {
-            override fun resolve(url: String): String {
+            override fun resolve(url: String): String? {
                 val uri = UriParser.parseUri(url)
+                if (uri !is UriParseResult.ParsedUri) return null
+
                 return uri.getFirstQueryParam("u")?.value + uri.fragment
             }
         },
@@ -221,6 +238,8 @@ object FastForward {
         ParamIdReverseBase64("param_id_reverse_base64") {
             override fun resolve(url: String): String? {
                 val uri = UriParser.parseUri(url)
+                if (uri !is UriParseResult.ParsedUri) return null
+
                 val param = uri.getFirstQueryParam("id")
                 if (param != null) {
                     var t = param.value?.split("")?.reversed()?.joinToString()
@@ -289,13 +308,18 @@ object FastForward {
 //    LinkvertiseSafeIn("linkvertise_safe_in");
 
         companion object {
-            val rulesCached = values().associateBy { it.jsonKey }
+            val rulesCached = entries.associateBy { it.jsonKey }
         }
 
         abstract fun resolve(url: String): String?
     }
 
-    private fun getQueryParam(url: String, param: String) = UriParser.parseUri(url).getFirstQueryParam(param)?.value
+    private fun getQueryParam(url: String, param: String): String? {
+        val uri = UriParser.parseUri(url)
+        if (uri !is UriParseResult.ParsedUri) return null
+
+        return uri.getFirstQueryParam(param)?.value
+    }
 
     fun getRuleRedirect(url: String, debugWriter: PrintStream? = null): String? {
         FastForwardRules.rules.map { (key, regexes) ->
