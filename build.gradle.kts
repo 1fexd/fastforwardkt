@@ -14,6 +14,7 @@ version = versioning.info.tag ?: versioning.info.full
 
 repositories {
     mavenCentral()
+    maven(url = "https://jitpack.io")
 }
 
 val implementation by configurations
@@ -36,7 +37,6 @@ dependencies {
 kotlin {
     jvmToolchain(17)
 }
-
 
 
 //tasks.named("jar").configure {
