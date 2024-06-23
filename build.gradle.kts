@@ -14,7 +14,6 @@ version = versioning.info.tag ?: versioning.info.full
 
 repositories {
     mavenCentral()
-    maven(url = "https://jitpack.io")
 }
 
 val implementation by configurations
