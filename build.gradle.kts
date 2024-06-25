@@ -25,8 +25,9 @@ val shadowImplementation = configurations.create("shadowImplementation") {
 
 dependencies {
     api(kotlin("stdlib"))
+    api(platform("com.github.1fexd.super:platform:0.0.1"))
 
-    implementation("com.github.1fexd:uriparser:0.0.11")
+    api("com.github.1fexd:uriparser")
 //    bundledDependency("com.gitlab.grrfe:gson-ext:11.0.0")
 //    bundledDependency("com.google.code.gson:gson:2.10.1")
 //    bundledDependency("com.github.1fexd:uriparser:0.0.7")
