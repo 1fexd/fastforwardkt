@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import fe.buildsrc.Package.relocatePackages
 
 plugins {
-    kotlin("jvm") version "1.9.24"
+    kotlin("jvm") version "2.1.20-RC"
     `java-library`
     `maven-publish`
     id("net.nemerosa.versioning") version "3.1.0"
@@ -24,19 +24,12 @@ val shadowImplementation = configurations.create("shadowImplementation") {
 }
 
 dependencies {
-    api(kotlin("stdlib"))
-    api(platform("com.github.1fexd:super"))
-
-    api("com.github.1fexd:uriparser")
-//    bundledDependency("com.gitlab.grrfe:gson-ext:11.0.0")
-//    bundledDependency("com.google.code.gson:gson:2.10.1")
-//    bundledDependency("com.github.1fexd:uriparser:0.0.7")
-
+    implementation("com.gitlab.grrfe.kotlin-ext:uri:0.0.114")
     testImplementation(kotlin("test"))
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 

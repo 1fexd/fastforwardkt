@@ -1,7 +1,8 @@
 package fe.fastforwardkt
 
-import fe.uribuilder.UriParseResult
-import fe.uribuilder.UriParser
+import fe.std.result.isFailure
+import fe.std.result.isSuccess
+import fe.std.uri.UrlFactory
 import java.io.PrintStream
 
 
@@ -42,26 +43,25 @@ object FastForward {
         QueryRaw("query_raw") {
             override fun resolve(url: String): String? {
                 // no fe.fastforwardkt.ext.substringNullable needed as in java, query does not start with ?
-                val uri = UriParser.parseUri(url)
-                if (uri !is UriParseResult.ParsedUri) return null
+                val uri = UrlFactory.parse(url)
+                if (uri.isFailure()) return null
 
-                return uri.uri.query + uri.fragment
+                return uri.value.uri.query + uri.value.fragment
             }
         },
         QueryBase64("query_base64") {
             override fun resolve(url: String): String? {
-                val uri = UriParser.parseUri(url)
-                if (uri !is UriParseResult.ParsedUri) return null
-
-                return uri.uri.query?.decodeBase64()
+                val uri = UrlFactory.parse(url)
+                if (uri.isFailure()) return null
+                return uri.value.uri.query?.decodeBase64()
             }
         },
         HashBase64("hash_base64") {
             override fun resolve(url: String): String? {
-                val parsedUri = UriParser.parseUri(url)
-                if (parsedUri !is UriParseResult.ParsedUri) return null
+                val uri = UrlFactory.parse(url)
+                if (uri.isFailure()) return null
 
-                return parsedUri.fragment?.decodeBase64()
+                return uri.value.fragment?.decodeBase64()
             }
         },
         ParamUrlGeneral("param_url_general") {
@@ -80,10 +80,10 @@ object FastForward {
                         uri = "http://$uri"
                     }
 
-                    val parsedUri = UriParser.parseUri(url)
-                    if (parsedUri !is UriParseResult.ParsedUri) return null
+                    val parsedUri = UrlFactory.parse(url)
+                    if (parsedUri.isFailure()) return null
 
-                    uri += parsedUri.fragment
+                    uri += parsedUri.value.fragment
                 }
 
                 // TODO: return referrer
@@ -147,10 +147,10 @@ object FastForward {
         },
         ParamWildcardBase64("param_wildcard_base64") {
             override fun resolve(url: String): String? {
-                val uri = UriParser.parseUri(url)
-                if (uri !is UriParseResult.ParsedUri) return null
+                val parsedUri = UrlFactory.parse(url)
+                if (parsedUri.isFailure()) return null
 
-                return uri.queryParams.firstOrNull()?.value?.decodeBase64()
+                return parsedUri.value.queryParams.firstOrNull()?.second?.decodeBase64()
             }
         },
         ParamRBase64("param_r_base64") {
@@ -193,10 +193,10 @@ object FastForward {
         },
         ParamUBase64("param_u_base64") {
             override fun resolve(url: String): String? {
-                val uri = UriParser.parseUri(url)
-                if (uri !is UriParseResult.ParsedUri) return null
+                val parsedUri = UrlFactory.parse(url)
+                if (parsedUri.isFailure()) return null
 
-                return uri.getFirstQueryParam("u")?.value + uri.fragment
+                return parsedUri.value.getFirstQueryParam("u")?.second + parsedUri.value.fragment
             }
         },
         ParamGoBase64("param_go_base64") {
@@ -237,12 +237,12 @@ object FastForward {
         },
         ParamIdReverseBase64("param_id_reverse_base64") {
             override fun resolve(url: String): String? {
-                val uri = UriParser.parseUri(url)
-                if (uri !is UriParseResult.ParsedUri) return null
+                val parsedUri = UrlFactory.parse(url)
+                if (parsedUri.isFailure()) return null
 
-                val param = uri.getFirstQueryParam("id")
+                val param = parsedUri.value.getFirstQueryParam("id")
                 if (param != null) {
-                    var t = param.value?.split("")?.reversed()?.joinToString()
+                    var t = param.second?.split("")?.reversed()?.joinToString()
                     if (t?.substringNullable(-16) == "\" target=\"_blank") {
                         t = t.substringNullable(0, t.length - 16)
                     }
@@ -315,10 +315,10 @@ object FastForward {
     }
 
     private fun getQueryParam(url: String, param: String): String? {
-        val uri = UriParser.parseUri(url)
-        if (uri !is UriParseResult.ParsedUri) return null
+        val parsedUri = UrlFactory.parse(url)
+        if (parsedUri.isFailure()) return null
 
-        return uri.getFirstQueryParam(param)?.value
+        return parsedUri.value.getFirstQueryParam(param)?.second
     }
 
     fun getRuleRedirect(url: String, debugWriter: PrintStream? = null): String? {
